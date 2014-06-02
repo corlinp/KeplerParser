@@ -368,75 +368,7 @@ public class KeplerParser extends JFrame {
 		setGraphWidth(data.get(0).getTime(), data.get(data.size()-1).getTime());
 	}
 
-	/** this is going to be replaced by the new strategy
-	double searchRad = 40;
-	public double avgAvgDev;
-	public double average;
 
-	public void findDev(){
-		average = currentStar.getAverage();
-		avgAvgDev = currentStar.getAvgDev();
-
-		//searchRad = (avgAvgDev * 3);
-
-		//System.out.println("average: " + average + " average dev: " + avgDev + " avg avg dev" + avgAvgDev);
-		final JFrame outlierFrame = new JFrame("Search for Outliers");
-		JPanel buttonPanel = new JPanel();
-		buttonPanel.setLayout(new GridLayout(5,1));
-		final JPanel outPanel = new JPanel();
-		outPanel.setLayout(new GridLayout(34,1));
-		outlierFrame.setLayout(new BorderLayout());
-		outlierFrame.setSize(200,580);
-		outlierFrame.add(buttonPanel,BorderLayout.NORTH);
-		outlierFrame.add(outPanel,BorderLayout.CENTER);
-		outlierFrame.setVisible(true);
-		buttonPanel.add(new JLabel("average: " + average));
-		buttonPanel.add(new JLabel("Average Deviation: " + avgAvgDev));
-
-		buttonPanel.add(new JLabel("Search Field"));
-		final JTextField searchRadius = new JTextField(50);
-		searchRadius.setText(String.valueOf(searchRad));
-		buttonPanel.add(searchRadius);
-
-		JButton searchJB = new JButton("Search!");
-		buttonPanel.add(searchJB);
-		searchJB.addActionListener(new ActionListener(){
-		    public void actionPerformed(ActionEvent e){
-
-		    	searchRad = doubleOf(searchRadius.getText());
-		    	if (searchRad <= avgAvgDev){
-		    		statusLabel.setText("There are too many points in that radius!");
-		    	}
-		    	outlierFrame.setVisible(false);
-		    	findDev();
-		    	statusLabel.setText("Searched for outlying data points in the range of " + searchRad);
-		    	outlierFrame.dispose();
-		    }
-		});
-
-
-		//System.out.println(searchRad);
-		int numOutliers = 0;
-		for(int i = 0; i < data.size(); i++){
-			 if(Math.abs(data.get(i).getPDCFlux()-average) > searchRad){
-				 numOutliers++;
-				 if(numOutliers >= 34){
-					 statusLabel.setText("Too many results! Try a larger search radius.");
-					 break;
-				 }
-				 final JButton jb = new JButton(i + ": " + data.get(i).getTime());
-				 jb.setBackground(Color.white);
-				 outPanel.add(jb);
-				 jb.addActionListener(new ActionListener(){
-					    public void actionPerformed(ActionEvent e){
-					    	DataPoint daytah = data.get((int)doubleOf(jb.getText().substring(0,jb.getText().indexOf(':'))));
-					    	centerOn(daytah);
-					    }
-					});
-			 }
-		}
-	}
-	 **/
 	int searchRad = 40;
 	public double avgAvgDev;
 	public double average;
@@ -467,7 +399,7 @@ public class KeplerParser extends JFrame {
 		outlierFrame.setVisible(true);
 		buttonPanel.add(new JLabel("average: " + average));
 		buttonPanel.add(new JLabel("Average Deviation: " + avgAvgDev));
-		
+
 		buttonPanel.add(new JLabel("Search Field"));
 		final JTextField searchRadius = new JTextField(50);
 		searchRadius.setText(String.valueOf(searchRad));
@@ -631,6 +563,7 @@ public class KeplerParser extends JFrame {
 		}
 	}
 
+
 	public class GraphPanel extends JPanel{
 		Thread tt = null;
 		int skip = 16;
@@ -644,29 +577,32 @@ public class KeplerParser extends JFrame {
 			int scrollamt;
 			if(!scrolling){
 				scrollamt = 1;
-//				if(c!=null)
-//					c.stop();
-//				//super.paintComponent(g);
-//				c = new computor();
-//				tt = new Thread(c);
-//				tt.start();
+				//				if(c!=null)
+				//					c.stop();
+				//				//super.paintComponent(g);
+				//				c = new computor();
+				//				tt = new Thread(c);
+				//				tt.start();
 			}
 			else{
 				scrollamt = (int)(((data.size()*(rightGraph-leftGraph))/ (data.get(data.size()-1).getTime() - data.get(0).getTime()))/getWidth());
 			}
-				Graphics2D g2 = (Graphics2D) g;
-				g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-				//roundAxes();
-				super.paintComponent(g);
-				g.setColor(Color.white);
-				if(data != null){
-					int lastY = 0;
-					int lastX = 0;
-					int sclog = (int)(Math.log(scrollamt) / Math.log(2));
-					scrollamt = (int) Math.pow(2, sclog);
-					if(scrollamt <=0)
-						scrollamt=1;
-					for(int i = binaryFinder(leftGraph); i < data.size(); i+=scrollamt){
+			Graphics2D g2 = (Graphics2D) g;
+			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			//roundAxes();
+			super.paintComponent(g);
+			g.setColor(Color.white);
+			if(data != null){
+				int lastY = 0;
+				int lastX = 0;
+				int sclog = (int)(Math.log(scrollamt) / Math.log(2));
+				scrollamt = (int) Math.pow(2, sclog);
+				if(scrollamt <=0)
+					scrollamt=1;
+				if(scrolling){
+					int i = binaryFinder(leftGraph);
+					i -= i % scrollamt;
+					for(; i < data.size(); i+=scrollamt){
 						DataPoint dp = data.get(i);
 						double incY = ((double)this.getHeight() / (topGraph - bottomGraph));
 						int pdcY = this.getHeight() - (int)(incY * (dp.getPDCFlux() - bottomGraph));
@@ -676,8 +612,27 @@ public class KeplerParser extends JFrame {
 						//System.out.println(pdcX);
 						dp.setY(pdcY);
 						dp.setX(pdcX);
-						if(!scrolling)
-							dp.paint(g);
+						if(lastX !=0  && lastY != 0){
+							g2.drawLine(lastX, lastY, pdcX, pdcY);
+						}
+						lastY = pdcY;
+						lastX = pdcX;
+						if(pdcX>this.getWidth())
+							break;
+					}
+				}
+				else{
+					for(int i = binaryFinder(leftGraph); i < data.size(); i++){
+						DataPoint dp = data.get(i);
+						double incY = ((double)this.getHeight() / (topGraph - bottomGraph));
+						int pdcY = this.getHeight() - (int)(incY * (dp.getPDCFlux() - bottomGraph));
+
+						double incX = ((double)this.getWidth() / (rightGraph - leftGraph));
+						int pdcX = (int)(incX * (dp.getTime() - leftGraph));
+
+						dp.setY(pdcY);
+						dp.setX(pdcX);
+						dp.paint(g);
 						g.setColor(Color.white);
 						if(lastX !=0  && lastY != 0){
 							g2.drawLine(lastX, lastY, pdcX, pdcY);
@@ -686,8 +641,14 @@ public class KeplerParser extends JFrame {
 						lastX = pdcX;
 						if(pdcX>this.getWidth())
 							break;
+					}
 				}
 			}
+			//			if(scrolling){
+			//				for(DataPoint dp:currentStar.maxpoints){
+			//					
+			//				}
+			//			}
 		}
 
 	}

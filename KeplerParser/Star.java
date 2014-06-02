@@ -158,6 +158,22 @@ public class Star {
 			totdiff+=currDiff;
 		}
 		avgDiff = totdiff / (data.size()-1);
+		
+		///////calculating increment;
+		firstTime = data.get(0).getTime();
+		increment = data.size() / (data.get(data.size()-1).getTime() - firstTime);
+		System.out.println("Increment is " + increment + " with first time " + firstTime);
+	}
+
+	private double increment; //(time - firsttime) * increment= point number
+	private double firstTime;
+	
+	public int indexOf(double time){
+		System.out.println(((time - firstTime) * increment) + " might be the index of time " + time);
+		int toReturn = (int)((time - firstTime) * increment);
+		if(toReturn < 0)
+			toReturn = 0;
+		return toReturn;
 	}
 	
 	public double getAverage() {
