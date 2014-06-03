@@ -38,7 +38,6 @@ public class KeplerParser extends JFrame {
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (Exception e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 
@@ -189,10 +188,16 @@ public class KeplerParser extends JFrame {
 			public void mouseMoved(MouseEvent e) {}
 
 		});
+		//////////////////scroll zooming/////////////
+		gPanel.addMouseWheelListener(new MouseWheelListener(){
+			public void mouseWheelMoved(MouseWheelEvent e) {
+				scrolling = true;
+				int scrolled = e.getScrollAmount() * e.getWheelRotation() * -1;
+				setGraphWidth(leftGraph + scrolled * (rightGraph - leftGraph)/20,rightGraph - scrolled * (rightGraph - leftGraph)/20);
+				repaint();
+			}
+		});
 		/////////////////begin graph width/////////////
-		JButton refreshButton = new JButton("Refresh Graph");
-
-		topPanel.add(refreshButton);
 		JLabel xlLabel = new JLabel("Left Time");
 		JLabel xrLabel = new JLabel("Right Time");
 		xLeft = new JTextField("170");
@@ -204,17 +209,15 @@ public class KeplerParser extends JFrame {
 		xLeft.setPreferredSize(new Dimension(100,25));
 		xRight.setPreferredSize(new Dimension(100,25));
 
-		refreshButton.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e){
-				repaint();
-			}
-		});
-
 		///////////y value things/////////////
 		JLabel ylLabel = new JLabel("Max Flux");
 		JLabel yrLabel = new JLabel("Min Flux");
 		yBottom = new JTextField("122300");
 		yTop = new JTextField("122400");
+		yTop.setBackground(Color.black);
+		yBottom.setBackground(Color.black);
+		xLeft.setBackground(Color.black);
+		xRight.setBackground(Color.black);
 		topPanel.add(yrLabel);
 		topPanel.add(yBottom);
 		topPanel.add(ylLabel);
@@ -331,23 +334,21 @@ public class KeplerParser extends JFrame {
 	}
 
 	public void setGraphWidth(double l, double r){
-		leftGraph = (double)(Math.round(l*1000))/1000;
-		rightGraph = (double)(Math.round(r*1000))/1000;
+		leftGraph = (double)(Math.round(l*10000))/10000;
+		rightGraph = (double)(Math.round(r*10000))/10000;
 		xLeft.setText(String.valueOf(leftGraph));
 		xRight.setText(String.valueOf(rightGraph));
 	}
 
 	public void setGraphHeight(double l, double r){
-		topGraph = (double)(Math.round(l*1000))/1000;
-		bottomGraph = (double)(Math.round(r*1000))/1000;
+		topGraph = (double)(Math.round(l*10000))/10000;
+		bottomGraph = (double)(Math.round(r*10000))/10000;
 		yTop.setText(String.valueOf(leftGraph));
 		yBottom.setText(String.valueOf(rightGraph));
 	}
 
 	public void fitY(){
 		double max = 0;
-		//TODO: make this binary find data at that time rather than displaypoints
-		//that way we can get rid of displaypoints
 		double min = 99999999;
 
 		for(DataPoint dp : data){
@@ -441,12 +442,6 @@ public class KeplerParser extends JFrame {
 	public double avgAvgDev;
 	public double average;
 
-	public void roundAxes(){
-		topGraph = ((double)Math.round(doubleOf(yTop.getText())*1000))/1000;
-		bottomGraph = ((double)Math.round(doubleOf(yBottom.getText())*1000))/1000;
-		yTop.setText(String.valueOf(topGraph));
-		yBottom.setText(String.valueOf(bottomGraph));
-	}
 
 	public void findDev(){
 		average = currentStar.getAverage();
@@ -560,8 +555,6 @@ public class KeplerParser extends JFrame {
 			bottomGraph = 0;
 	double leftGraph = 160, rightGraph =173;
 
-	LinkedList<Integer> displayPts = new LinkedList<Integer>();
-
 	public class computor implements Runnable{
 		int left;
 		int skip;
@@ -656,7 +649,6 @@ public class KeplerParser extends JFrame {
 			}
 				Graphics2D g2 = (Graphics2D) g;
 				g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-				//roundAxes();
 				super.paintComponent(g);
 				g.setColor(Color.white);
 				if(data != null){

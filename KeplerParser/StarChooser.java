@@ -49,7 +49,7 @@ public class StarChooser {
 				else{
 
 					Star currentStar = new Star(files[f]);
-					ArrayList<DataPoint> data = currentStar.getData();
+					//ArrayList<DataPoint> data = currentStar.getData();
 					double avgAvgDev = currentStar.getAvgDev();
 
 					int goodCount=0;

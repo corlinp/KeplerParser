@@ -12,7 +12,7 @@ import javax.swing.JFrame;
 
 public class FileStarter {
 	
-	static String fileLoc = "C:/goods";
+	static String fileLoc = "Z:/gogogo";
 	
 	public static void main(String args[]){
 		new FileStarter(fileLoc);
