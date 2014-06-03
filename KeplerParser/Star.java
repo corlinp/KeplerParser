@@ -159,6 +159,7 @@ public class Star {
 		}
 		avgDiff = totdiff / (data.size()-1);
 	}
+
 	
 	public double getAverage() {
 		return average;
